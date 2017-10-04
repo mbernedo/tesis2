@@ -10,8 +10,8 @@ import au.com.bytecode.opencsv.CSVReader;
 
 public class Start {
     public static void main(String[] args) throws IOException {
-	CSVReader reader = new CSVReader(new FileReader("C:\\Users\\mbernedo.REMAGEOS\\Desktop\\NetBeans\\UL\\Tesis\\src\\tesis\\data.csv"));
-	FileWriter writer = new FileWriter("C:\\Users\\mbernedo.REMAGEOS\\Desktop\\out.csv");
+	CSVReader reader = new CSVReader(new FileReader("C:\\Users\\migue_000\\Desktop\\cluster.csv"));
+	FileWriter writer = new FileWriter("C:\\Users\\migue_000\\Desktop\\out.csv");
 	List<String[]> myEntries = reader.readAll();
 	List<Punto> puntos = new ArrayList<Punto>();
 
