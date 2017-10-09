@@ -53,6 +53,9 @@ public class EKmeansGUI {
 
     private static final int X = 0;
     private static final int Y = 1;
+    private static final int Z = 2;
+    private static final int W = 3;
+    private static final int V = 4;
 
     private static final int RESOLUTION = 300;
     private static final Random RANDOM = new Random(System.currentTimeMillis());
@@ -99,12 +102,6 @@ public class EKmeansGUI {
         });
         toolBar.add(csvExportButton);
 
-        JLabel nLabel = new JLabel("n:");
-        toolBar.add(nLabel);
-
-        nTextField = new JTextField("1000");
-        toolBar.add(nTextField);
-
         JButton randomButton = new JButton();
         randomButton.setAction(new AbstractAction(" Random ") {
             public void actionPerformed(ActionEvent ae) {
@@ -112,24 +109,6 @@ public class EKmeansGUI {
             }
         });
         toolBar.add(randomButton);
-
-        JLabel kLabel = new JLabel("k:");
-        toolBar.add(kLabel);
-
-        kTextField = new JTextField("5");
-        toolBar.add(kTextField);
-
-        JLabel equalLabel = new JLabel("equal:");
-        toolBar.add(equalLabel);
-
-        equalCheckBox = new JCheckBox("");
-        toolBar.add(equalCheckBox);
-
-        JLabel debugLabel = new JLabel("debug:");
-        toolBar.add(debugLabel);
-
-        debugTextField = new JTextField("0");
-        toolBar.add(debugTextField);
 
         JButton runButton = new JButton();
         runButton.setAction(new AbstractAction(" Start ") {
@@ -165,27 +144,24 @@ public class EKmeansGUI {
         eKmeans = null;
         lines = null;
         try {
-            JFileChooser chooser = new JFileChooser();
-            int returnVal = chooser.showOpenDialog(toolBar);
-            if (returnVal != JFileChooser.APPROVE_OPTION) {
-                return;
-            }
             minmaxlens = new double[][]{
-                {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY},
-                {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
-                {0d, 0d}
+                {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY},
+                {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
+                {0d, 0d, 0d, 0d, 0d}
             };
             java.util.List points = new ArrayList();
             java.util.List lines = new ArrayList();
-            BufferedReader reader = new BufferedReader(new FileReader(chooser.getSelectedFile()));
+            BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\mbernedo.REMAGEOS\\Desktop\\dataCluster.csv"));
             String line;
             while ((line = reader.readLine()) != null) {
                 lines.add(line);
                 String[] pointString = line.split(",");
-                double[] point = new double[10];
+                double[] point = new double[5];
                 point[X] = Double.parseDouble(pointString[X].trim());
                 point[Y] = Double.parseDouble(pointString[Y].trim());
-                System.out.println(point[X] + ", " + point[Y]);
+                point[Z] = Double.parseDouble(pointString[Z].trim());
+                point[W] = Double.parseDouble(pointString[W].trim());
+                point[V] = Double.parseDouble(pointString[V].trim());
                 points.add(point);
                 if (point[X] < minmaxlens[MIN][X]) {
                     minmaxlens[MIN][X] = point[X];
@@ -193,18 +169,38 @@ public class EKmeansGUI {
                 if (point[Y] < minmaxlens[MIN][Y]) {
                     minmaxlens[MIN][Y] = point[Y];
                 }
+                if (point[Z] < minmaxlens[MIN][Z]) {
+                    minmaxlens[MIN][Z] = point[Z];
+                }
+                if (point[W] < minmaxlens[MIN][W]) {
+                    minmaxlens[MIN][W] = point[W];
+                }
+                if (point[V] < minmaxlens[MIN][V]) {
+                    minmaxlens[MIN][V] = point[V];
+                }
                 if (point[X] > minmaxlens[MAX][X]) {
                     minmaxlens[MAX][X] = point[X];
                 }
                 if (point[Y] > minmaxlens[MAX][Y]) {
                     minmaxlens[MAX][Y] = point[Y];
                 }
+                if (point[Z] > minmaxlens[MAX][Z]) {
+                    minmaxlens[MAX][Z] = point[Z];
+                }
+                if (point[W] > minmaxlens[MAX][W]) {
+                    minmaxlens[MAX][W] = point[W];
+                }
+                if (point[V] > minmaxlens[MAX][V]) {
+                    minmaxlens[MAX][V] = point[V];
+                }
             }
             minmaxlens[LEN][X] = minmaxlens[MAX][X] - minmaxlens[MIN][X];
             minmaxlens[LEN][Y] = minmaxlens[MAX][Y] - minmaxlens[MIN][Y];
+            minmaxlens[LEN][Z] = minmaxlens[MAX][Z] - minmaxlens[MIN][Z];
+            minmaxlens[LEN][W] = minmaxlens[MAX][W] - minmaxlens[MIN][W];
+            minmaxlens[LEN][V] = minmaxlens[MAX][V] - minmaxlens[MIN][V];
             reader.close();
             this.points = (double[][]) points.toArray(new double[points.size()][]);
-            nTextField.setText(String.valueOf(this.points.length));
             this.lines = (String[]) lines.toArray(new String[lines.size()]);
         } catch (Exception e) {
             e.printStackTrace(System.err);
@@ -230,12 +226,14 @@ public class EKmeansGUI {
             int[] assignments = eKmeans.getAssignments();
             if (lines != null) {
                 for (int i = 0; i < points.length; i++) {
-                    writer.printf(Locale.ENGLISH, "%d,%s%n", assignments[i], lines[i]);
+                    writer.printf(Locale.ENGLISH, "%d,%s%n", assignments[i], lines[i], "hola");
                 }
+                System.out.println("aqui");
             } else {
                 for (int i = 0; i < points.length; i++) {
                     writer.printf(Locale.ENGLISH, "%d,%f,%f%n", assignments[i], points[i][X], points[i][Y]);
                 }
+                System.out.println("aqui tambien");
             }
             writer.flush();
             writer.close();
@@ -251,12 +249,12 @@ public class EKmeansGUI {
         enableToolBar(false);
         eKmeans = null;
         lines = null;
-        int n = Integer.parseInt(nTextField.getText());
-        points = new double[n][10];
+        int n = this.points.length;
+        points = new double[n][5];
         minmaxlens = new double[][]{
-            {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY},
-            {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
-            {0d, 0d}
+            {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY},
+            {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
+            {0d, 0d, 0d, 0d, 0d}
         };
         for (int i = 0; i < n; i++) {
             points[i][X] = RANDOM.nextDouble();
@@ -267,15 +265,37 @@ public class EKmeansGUI {
             if (points[i][Y] < minmaxlens[MIN][Y]) {
                 minmaxlens[MIN][Y] = points[i][Y];
             }
+            if (points[i][Z] < minmaxlens[MIN][Z]) {
+                minmaxlens[MIN][Z] = points[i][Z];
+            }
+            if (points[i][W] < minmaxlens[MIN][W]) {
+                minmaxlens[MIN][W] = points[i][W];
+            }
+            if (points[i][V] < minmaxlens[MIN][V]) {
+                minmaxlens[MIN][V] = points[i][V];
+            }
             if (points[i][X] > minmaxlens[MAX][X]) {
                 minmaxlens[MAX][X] = points[i][X];
             }
             if (points[i][Y] > minmaxlens[MAX][Y]) {
                 minmaxlens[MAX][Y] = points[i][Y];
             }
+            if (points[i][Z] > minmaxlens[MAX][Z]) {
+                minmaxlens[MAX][Z] = points[i][Z];
+            }
+            if (points[i][W] > minmaxlens[MAX][W]) {
+                minmaxlens[MAX][W] = points[i][W];
+            }
+            if (points[i][V] > minmaxlens[MAX][V]) {
+                minmaxlens[MAX][V] = points[i][V];
+            }
+
         }
         minmaxlens[LEN][X] = minmaxlens[MAX][X] - minmaxlens[MIN][X];
         minmaxlens[LEN][Y] = minmaxlens[MAX][Y] - minmaxlens[MIN][Y];
+        minmaxlens[LEN][Z] = minmaxlens[MAX][Z] - minmaxlens[MIN][Z];
+        minmaxlens[LEN][W] = minmaxlens[MAX][W] - minmaxlens[MIN][W];
+        minmaxlens[LEN][V] = minmaxlens[MAX][V] - minmaxlens[MIN][V];
         canvaPanel.repaint();
         enableToolBar(true);
     }
@@ -284,6 +304,7 @@ public class EKmeansGUI {
         if (points == null) {
             random();
         }
+        System.out.println("aqui tambien run");
         new Thread(new Runnable() {
             public void run() {
                 enableToolBar(false);
@@ -298,19 +319,13 @@ public class EKmeansGUI {
 
     private void run() {
         try {
-            URL url = new URL("http://staticmap.openstreetmap.de/staticmap.php?center=" + (minmaxlens[MIN][X] + (minmaxlens[LEN][X] / 2d)) + "," + (minmaxlens[MIN][Y] + (minmaxlens[LEN][Y] / 2d)) + "&zoom=14&size=" +  canvaPanel.getWidth() + "x" + canvaPanel.getHeight() + "&maptype=mapnik");
+            URL url = new URL("http://staticmap.openstreetmap.de/staticmap.php?center=" + (minmaxlens[MIN][X] + (minmaxlens[LEN][X] / 2d)) + "," + (minmaxlens[MIN][Y] + (minmaxlens[LEN][Y] / 2d)) + "&zoom=14&size=" + canvaPanel.getWidth() + "x" + canvaPanel.getHeight() + "&maptype=mapnik");
             System.out.println("url:" + url);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-        int k = Integer.parseInt(kTextField.getText());
-        boolean equal = equalCheckBox.isSelected();
-        int debugTmp = 0;
-        try {
-            debugTmp = Integer.parseInt(debugTextField.getText());
-        } catch (NumberFormatException ignore) {
-        }
-        final int debug = debugTmp;
+        int k = 5;
+        boolean equal = false;
         centroids = new double[k][2];
         for (int i = 0; i < k; i++) {
 //            centroids[i][X] = minmaxlens[MIN][X] + (minmaxlens[LEN][X] * RANDOM.nextDouble());
@@ -319,19 +334,7 @@ public class EKmeansGUI {
             centroids[i][Y] = minmaxlens[MIN][Y] + (minmaxlens[LEN][Y] / 2d);
         }
         AbstractEKmeans.Listener listener = null;
-        if (debug > 0) {
-            listener = new AbstractEKmeans.Listener() {
-                public void iteration(int iteration, int move) {
-                    statusBar.setText(MessageFormat.format("iteration {0} move {1}", iteration, move));
-                    canvaPanel.repaint();
-                    try {
-                        Thread.sleep(debug);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            };
-        }
+        
         eKmeans = new DoubleEKmeansExt(centroids, points, equal, DoubleEKmeans.EUCLIDEAN_DISTANCE_FUNCTION, listener);
         long time = System.currentTimeMillis();
         eKmeans.run();

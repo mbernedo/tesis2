@@ -8,8 +8,8 @@ package tesis;
 import java.io.File;
 import java.io.IOException;
 import net.sf.javaml.core.Dataset;
-import net.sf.javaml.distance.PearsonCorrelationCoefficient;
-import net.sf.javaml.featureselection.subset.GreedyForwardSelection;
+import net.sf.javaml.distance.*;
+import net.sf.javaml.featureselection.subset.*;
 import net.sf.javaml.tools.data.FileHandler;
 
 /**
@@ -28,14 +28,14 @@ public class Tesis {
         Pearson corr = new Pearson(a, u);
         double rpta = corr.correlacion();
         System.out.println(rpta);*/
-        Dataset data = FileHandler.loadDataset(new File("C:\\Users\\mbernedo.REMAGEOS\\Desktop\\UCI-small\\iris\\iris.data"), 4, ",");
+        Dataset data = FileHandler.loadDataset(new File("C:\\Users\\mbernedo.REMAGEOS\\Desktop\\dataFeat.csv"), 11, ",");
         /*
          * Construct a greedy forward subset selector that will use the Pearson
          * correlation to determine the relation between each attribute and the
          * class label. The first parameter indicates that only one, i.e. 'the
          * best' attribute will be selected.
          */
-        GreedyForwardSelection ga = new GreedyForwardSelection(3, new PearsonCorrelationCoefficient());
+        GreedyForwardSelection ga = new GreedyForwardSelection(5, new EuclideanDistance());
         /* Apply the algorithm to the data set */
         ga.build(data);
         /* Print out the attribute that has been selected */
