@@ -5,6 +5,7 @@
  */
 package tesis;
 
+import data.Ruta;
 import java.io.File;
 import java.io.IOException;
 import net.sf.javaml.core.Dataset;
@@ -28,7 +29,8 @@ public class Tesis {
         Pearson corr = new Pearson(a, u);
         double rpta = corr.correlacion();
         System.out.println(rpta);*/
-        Dataset data = FileHandler.loadDataset(new File("C:\\Users\\mbernedo.REMAGEOS\\Desktop\\dataFeat.csv"), 11, ",");
+        Ruta ruta = new Ruta();
+        Dataset data = FileHandler.loadDataset(new File(ruta.getRutaFeat()), 10, ",");
         /*
          * Construct a greedy forward subset selector that will use the Pearson
          * correlation to determine the relation between each attribute and the

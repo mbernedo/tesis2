@@ -1,24 +1,6 @@
-/*
- * This file is part of ekmeans.
- *
- * ekmeans is free software: you can redistribute it and/or modify it under the
- * terms of the GNU General Public License as published by the Free Software
- * Foundation, either version 3 of the License, or (at your option) any later
- * version.
- *
- * ekmeans is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
- * A PARTICULAR PURPOSE. See the GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * Foobar. If not, see <http://www.gnu.org/licenses/>.
- * 
- * ekmeans  Copyright (C) 2012  Pierre-David Belanger <pierredavidbelanger@gmail.com>
- * 
- * Contributor(s): Pierre-David Belanger <pierredavidbelanger@gmail.com>
- */
 package cluster;
 
+import data.Ruta;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -27,7 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Random;
 
 public class EKmeansGUI {
@@ -56,16 +37,11 @@ public class EKmeansGUI {
     private static final int Z = 2;
     private static final int W = 3;
     private static final int V = 4;
+    private static final Ruta ruta = new Ruta();
 
     private static final int RESOLUTION = 300;
-    private static final Random RANDOM = new Random(System.currentTimeMillis());
     private JToolBar toolBar;
-    private JTextField nTextField;
-    private JTextField kTextField;
-    private JCheckBox equalCheckBox;
-    private JTextField debugTextField;
     private JPanel canvaPanel;
-    private JLabel statusBar;
     private double[][] centroids = null;
     private double[][] points = null;
     private double[][] minmaxlens = null;
@@ -87,7 +63,7 @@ public class EKmeansGUI {
         contentPanel.add(toolBar, BorderLayout.NORTH);
 
         JButton csvImportButton = new JButton();
-        csvImportButton.setAction(new AbstractAction(" Import CSV ") {
+        csvImportButton.setAction(new AbstractAction(" Cargar dataset ") {
             public void actionPerformed(ActionEvent ae) {
                 csvImport();
             }
@@ -95,23 +71,15 @@ public class EKmeansGUI {
         toolBar.add(csvImportButton);
 
         JButton csvExportButton = new JButton();
-        csvExportButton.setAction(new AbstractAction(" Export CSV ") {
+        csvExportButton.setAction(new AbstractAction(" Obtener resultados ") {
             public void actionPerformed(ActionEvent ae) {
                 csvExport();
             }
         });
         toolBar.add(csvExportButton);
 
-        JButton randomButton = new JButton();
-        randomButton.setAction(new AbstractAction(" Random ") {
-            public void actionPerformed(ActionEvent ae) {
-                random();
-            }
-        });
-        toolBar.add(randomButton);
-
         JButton runButton = new JButton();
-        runButton.setAction(new AbstractAction(" Start ") {
+        runButton.setAction(new AbstractAction(" Cluster ") {
             public void actionPerformed(ActionEvent ae) {
                 start();
             }
@@ -125,9 +93,6 @@ public class EKmeansGUI {
             }
         };
         contentPanel.add(canvaPanel, BorderLayout.CENTER);
-
-        statusBar = new JLabel(" ");
-        contentPanel.add(statusBar, BorderLayout.SOUTH);
 
         frame.pack();
         frame.setVisible(true);
@@ -151,7 +116,7 @@ public class EKmeansGUI {
             };
             java.util.List points = new ArrayList();
             java.util.List lines = new ArrayList();
-            BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\mbernedo.REMAGEOS\\Desktop\\dataCluster.csv"));
+            BufferedReader reader = new BufferedReader(new FileReader(ruta.getRutaCLus()));
             String line;
             while ((line = reader.readLine()) != null) {
                 lines.add(line);
@@ -211,32 +176,26 @@ public class EKmeansGUI {
     }
 
     private void csvExport() {
+        ArrayList<Cluster> lista = new ArrayList<>();
+        Cluster cluster = new Cluster();
         if (eKmeans == null) {
             return;
         }
         enableToolBar(false);
         try {
-            JFileChooser chooser = new JFileChooser();
-            int returnVal = chooser.showSaveDialog(toolBar);
-            if (returnVal != JFileChooser.APPROVE_OPTION) {
-                return;
-            }
-            PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(chooser.getSelectedFile())));
             double[][] points = this.points;
             int[] assignments = eKmeans.getAssignments();
             if (lines != null) {
                 for (int i = 0; i < points.length; i++) {
-                    writer.printf(Locale.ENGLISH, "%d,%s%n", assignments[i], lines[i], "hola");
+                    cluster.setCluster(assignments[i]);
+                    cluster.setLines(lines[i]);
+                    System.out.println(assignments[i] + ",::," + lines[i]);
+                    lista.add(cluster);
                 }
                 System.out.println("aqui");
             } else {
-                for (int i = 0; i < points.length; i++) {
-                    writer.printf(Locale.ENGLISH, "%d,%f,%f%n", assignments[i], points[i][X], points[i][Y]);
-                }
-                System.out.println("aqui tambien");
+                System.out.println("no hay datos");
             }
-            writer.flush();
-            writer.close();
         } catch (Exception e) {
             e.printStackTrace(System.err);
         } finally {
@@ -245,65 +204,7 @@ public class EKmeansGUI {
         }
     }
 
-    private void random() {
-        enableToolBar(false);
-        eKmeans = null;
-        lines = null;
-        int n = this.points.length;
-        points = new double[n][5];
-        minmaxlens = new double[][]{
-            {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY},
-            {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY},
-            {0d, 0d, 0d, 0d, 0d}
-        };
-        for (int i = 0; i < n; i++) {
-            points[i][X] = RANDOM.nextDouble();
-            points[i][Y] = RANDOM.nextDouble();
-            if (points[i][X] < minmaxlens[MIN][X]) {
-                minmaxlens[MIN][X] = points[i][X];
-            }
-            if (points[i][Y] < minmaxlens[MIN][Y]) {
-                minmaxlens[MIN][Y] = points[i][Y];
-            }
-            if (points[i][Z] < minmaxlens[MIN][Z]) {
-                minmaxlens[MIN][Z] = points[i][Z];
-            }
-            if (points[i][W] < minmaxlens[MIN][W]) {
-                minmaxlens[MIN][W] = points[i][W];
-            }
-            if (points[i][V] < minmaxlens[MIN][V]) {
-                minmaxlens[MIN][V] = points[i][V];
-            }
-            if (points[i][X] > minmaxlens[MAX][X]) {
-                minmaxlens[MAX][X] = points[i][X];
-            }
-            if (points[i][Y] > minmaxlens[MAX][Y]) {
-                minmaxlens[MAX][Y] = points[i][Y];
-            }
-            if (points[i][Z] > minmaxlens[MAX][Z]) {
-                minmaxlens[MAX][Z] = points[i][Z];
-            }
-            if (points[i][W] > minmaxlens[MAX][W]) {
-                minmaxlens[MAX][W] = points[i][W];
-            }
-            if (points[i][V] > minmaxlens[MAX][V]) {
-                minmaxlens[MAX][V] = points[i][V];
-            }
-
-        }
-        minmaxlens[LEN][X] = minmaxlens[MAX][X] - minmaxlens[MIN][X];
-        minmaxlens[LEN][Y] = minmaxlens[MAX][Y] - minmaxlens[MIN][Y];
-        minmaxlens[LEN][Z] = minmaxlens[MAX][Z] - minmaxlens[MIN][Z];
-        minmaxlens[LEN][W] = minmaxlens[MAX][W] - minmaxlens[MIN][W];
-        minmaxlens[LEN][V] = minmaxlens[MAX][V] - minmaxlens[MIN][V];
-        canvaPanel.repaint();
-        enableToolBar(true);
-    }
-
     private void start() {
-        if (points == null) {
-            random();
-        }
         System.out.println("aqui tambien run");
         new Thread(new Runnable() {
             public void run() {
@@ -326,20 +227,20 @@ public class EKmeansGUI {
         }
         int k = 5;
         boolean equal = false;
-        centroids = new double[k][2];
+        centroids = new double[k][5];
         for (int i = 0; i < k; i++) {
-//            centroids[i][X] = minmaxlens[MIN][X] + (minmaxlens[LEN][X] * RANDOM.nextDouble());
-//            centroids[i][Y] = minmaxlens[MIN][Y] + (minmaxlens[LEN][Y] * RANDOM.nextDouble());
             centroids[i][X] = minmaxlens[MIN][X] + (minmaxlens[LEN][X] / 2d);
             centroids[i][Y] = minmaxlens[MIN][Y] + (minmaxlens[LEN][Y] / 2d);
+            centroids[i][Z] = minmaxlens[MIN][Z] + (minmaxlens[LEN][Z] / 2d);
+            centroids[i][W] = minmaxlens[MIN][W] + (minmaxlens[LEN][W] / 2d);
+            centroids[i][V] = minmaxlens[MIN][V] + (minmaxlens[LEN][V] / 2d);
         }
         AbstractEKmeans.Listener listener = null;
-        
+
         eKmeans = new DoubleEKmeansExt(centroids, points, equal, DoubleEKmeans.EUCLIDEAN_DISTANCE_FUNCTION, listener);
         long time = System.currentTimeMillis();
         eKmeans.run();
         time = System.currentTimeMillis() - time;
-        statusBar.setText(MessageFormat.format("EKmeans run in {0}ms", time));
         canvaPanel.repaint();
     }
 
